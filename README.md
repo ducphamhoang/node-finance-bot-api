@@ -1,40 +1,39 @@
-# Firebase Studio Project
+# FinanceFlow AI
 
-This is a Next.js starter project for Firebase Studio. This document provides a comprehensive guide to setting up, running, and deploying the project, with a focus on integration with Google Cloud Functions and Firebase.
+FinanceFlow AI is a Next.js application that uses AI to extract transaction details from text. It provides a simple interface for users to paste transaction descriptions and get back structured data, such as the transaction description, category, type, amount, and date.
 
-## Table of Contents
+## Features
 
-- [Getting Started](#getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
-- [Environment Variables](#environment-variables)
-- [Running the Project Locally](#running-the-project-locally)
-- [Linting and Formatting](#linting-and-formatting)
-- [Building the Project](#building-the-project)
-- [Running Tests](#running-tests)
-- [Deployment to Google Cloud Functions](#deployment-to-google-cloud-functions)
-- [Firebase Integration](#firebase-integration)
-- [API Reference](#api-reference)
+- **Transaction Detail Extraction**: Extracts transaction details from unstructured text.
+- **Categorization**: Categorizes transactions into different types (e.g., groceries, dining, utilities).
+- **Transaction Type Identification**: Identifies whether a transaction is an income or an expense.
+- **Amount Extraction**: Extracts the transaction amount.
+- **Date Extraction**: Extracts the transaction date.
+- **Omnibus Mode**: Allows the AI to assign `null` to fields it cannot confidently determine.
+- **Task-Specific Analysis**: Allows users to perform specific tasks, such as categorization or amount extraction.
+
+## Tech Stack
+
+- **Framework**: [Next.js](https://nextjs.org/)
+- **AI**: [Genkit](https://firebase.google.com/docs/genkit)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **UI Components**: [shadcn/ui](https://ui.shadcn.com/)
+- **Language**: [TypeScript](https://www.typescriptlang.org/)
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js (v18 or later)
-- npm or yarn
-- A Google Cloud project with the following APIs enabled:
-  - AI Platform API
-  - Cloud Functions API
-  - Cloud Build API
-- Firebase CLI
+- Node.js (v20 or higher)
+- npm
 
 ### Installation
 
 1. **Clone the repository:**
 
    ```bash
-   git clone <repository-url>
-   cd <repository-name>
+   git clone https://github.com/your-username/node-finance-bot-api.git
+   cd node-finance-bot-api
    ```
 
 2. **Install the dependencies:**
@@ -43,122 +42,64 @@ This is a Next.js starter project for Firebase Studio. This document provides a 
    npm install
    ```
 
-## Environment Variables
+3. **Set up your environment variables:**
 
-To run the project, you need to set up the following environment variables. Create a `.env` file in the root of the project and add the following:
+   Create a `.env.local` file in the root of your project and add the following:
 
-```
-GEMINI_API_KEY=<your-google-ai-api-key>
-```
+   ```env
+   GOOGLE_API_KEY=your_google_api_key
+   ```
 
-Replace `<your-google-ai-api-key>` with your actual Google AI API key. You can obtain a key from the Google AI Studio.
+   Replace `your_google_api_key` with your actual Google API key.
 
-## Running the Project Locally
+### Running the Development Server
 
-To start the development server, run:
+To run the development server, use the following command:
 
 ```bash
 npm run dev
 ```
 
-This will start the Next.js application on `http://localhost:3000`.
+This will start the Next.js development server on http://localhost:9002.
 
-## Linting and Formatting
-
-This project uses ESLint for linting and Prettier for code formatting. To check for linting errors, run:
+To run the Genkit development server, use the following command:
 
 ```bash
-npm run lint
+npm run genkit:dev
 ```
 
-To automatically fix linting and formatting issues, run:
+This will start the Genkit development server on http://localhost:4000.
 
-```bash
-npm run format
-```
+## Building for Production
 
-## Building the Project
-
-To create a production build of the application, run:
+To build the application for production, use the following command:
 
 ```bash
 npm run build
 ```
 
-This will generate an optimized version of the application in the `.next` directory.
+This will create a production-ready build in the `.next` directory.
 
-## Running Tests
+## Running in Production
 
-To run the tests, you first need to compile the TypeScript files. Then, you can run the tests using `tsx`:
+To run the application in production, use the following command:
 
 ```bash
-npx tsx test.ts
+npm start
 ```
 
-## Deployment to Google Cloud Functions
+This will start the Next.js production server.
 
-To deploy the Genkit flows to Google Cloud Functions, you can use the Firebase CLI.
+## Linting and Type Checking
 
-1. **Login to Firebase:**
+To lint the code, use the following command:
 
-   ```bash
-   firebase login
-   ```
+```bash
+npm run lint
+```
 
-2. **Initialize Firebase in your project:**
+To type-check the code, use the following command:
 
-   ```bash
-   firebase init functions
-   ```
-
-   When prompted, select "Use an existing project" and choose your Google Cloud project. Select TypeScript as the language for Cloud Functions.
-
-3. **Deploy the functions:**
-
-   You will need to modify the `index.ts` file in the `functions` directory to export your Genkit flows.
-
-   ```typescript
-   // functions/src/index.ts
-   import { https } from 'firebase-functions';
-   import { extractTransactionDetails } from '../../src/ai/flows/extract-transaction-details'; // Adjust the path as needed
-
-   export const extractDetails = https.onCall(async (data, context) => {
-     return await extractTransactionDetails(data);
-   });
-   ```
-
-   Then, deploy the function:
-
-   ```bash
-   firebase deploy --only functions
-   ```
-
-## Firebase Integration
-
-You can integrate this project with other Firebase services like Firestore, Authentication, and Hosting.
-
-- **Firestore:** Use the Firebase Admin SDK to interact with Firestore from your Genkit flows or Next.js API routes.
-- **Authentication:** Secure your application and Cloud Functions using Firebase Authentication.
-- **Hosting:** Deploy your Next.js application to Firebase Hosting.
-
-## API Reference
-
-### `extractTransactionDetails(input: ExtractTransactionDetailsInput): Promise<ExtractTransactionDetailsOutput>`
-
-Extracts transaction details from a given text.
-
-**Input:**
-
-- `text` (string): The text describing the transaction.
-- `task` (string, optional): The specific task to perform (e.g., 'categorize', 'get_transaction_type').
-- `omnibusMode` (boolean, optional): Whether to intelligently assign null values.
-
-**Output:**
-
-An object containing the extracted transaction details:
-
-- `description` (string)
-- `category` (string | null)
-- `type` (string)
-- `amount` (number | null)
-- `date` (string | null)
+```bash
+npm run typecheck
+```
