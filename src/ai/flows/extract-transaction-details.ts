@@ -39,7 +39,7 @@ const AssignNullTool = ai.defineTool(
     outputSchema: z.literal('null'),
   },
   async (input) => {
-    return null;
+    return 'null' as const;
   }
 );
 
