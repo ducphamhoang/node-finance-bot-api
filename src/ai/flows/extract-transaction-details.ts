@@ -59,7 +59,11 @@ const prompt = ai.definePrompt({
   - description: A concise description of the transaction.
   - category: The category of the transaction (e.g., groceries, dining, utilities). If you cannot determine the category, and omnibusMode is enabled, use the assignNull tool to assign null.
   - type: The type of transaction (income or expense).
-  - amount: The numerical amount of the transaction. If you cannot determine the amount, and omnibusMode is enabled, use the assignNull tool to assign null.
+  - amount: The numerical amount of the transaction. If you cannot determine the amount, and omnibusMode is enabled, use the assignNull tool to assign null. When extracting the amount field:
+    - If the amount includes 'k' (e.g., 100k), interpret as 100,000.
+    - If the amount includes 'm' or 'M' (e.g., 1m, 1M), interpret as 1,000,000.
+    - Accept both lowercase and uppercase suffixes.
+    - Always return the amount as a number in the response.
   - date: The date of the transaction in ISO format (YYYY-MM-DD). If you cannot determine the date, and omnibusMode is enabled, use the assignNull tool to assign null.
 
   Here is the transaction description:
