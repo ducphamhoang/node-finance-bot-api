@@ -2,6 +2,25 @@
 
 This document outlines the plan to implement the Core Extraction APIs for the Finance Bot.
 
+## Available Fields
+
+The API supports extraction of the following 5 fields based on the `ExtractTransactionDetailsOutput` schema:
+
+- **description**: The description of the transaction (string)
+- **category**: The category of the transaction (string, nullable)
+- **type**: The type of transaction (string, e.g., "income", "expense")
+- **amount**: The amount of the transaction (number, nullable)
+- **date**: The date of the transaction in ISO format YYYY-MM-DD (string, nullable)
+
+## Dependencies
+
+The implementation requires the following additional dependencies:
+
+- **firebase-admin**: For server-side Firebase App Check token verification
+- **vitest**: Modern test runner for comprehensive API testing
+- **@vitest/ui**: Optional UI for test visualization
+- **next-test-api-route-handler**: Helper for testing Next.js App Router API routes
+
 ## 1. Foundation: The All-in-One Extraction API
 
 This will be the base API that provides the full extraction functionality.
@@ -40,7 +59,7 @@ This will extend the All-in-One API to allow consumers to select specific fields
 ```json
 {
   "text": "Transaction description goes here",
-  "fields": ["merchant", "amount"]
+  "fields": ["category", "amount"]
 }
 ```
 
@@ -63,11 +82,11 @@ These will be dedicated endpoints for extracting a single, specific field. They 
 
 **Endpoints:**
 
-*   `POST /api/v1/transactions/extract/merchant`
-*   `POST /api/v1/transactions/extract/amount`
+*   `POST /api/v1/transactions/extract/description`
 *   `POST /api/v1/transactions/extract/category`
+*   `POST /api/v1/transactions/extract/type`
+*   `POST /api/v1/transactions/extract/amount`
 *   `POST /api/v1/transactions/extract/date`
-*   ... (and so on for other extractable fields)
 
 **Request Body:**
 
@@ -81,16 +100,17 @@ These will be dedicated endpoints for extracting a single, specific field. They 
 
 ```json
 {
-  "merchant": "Example Merchant"
+  "category": "dining"
 }
 ```
 
 **Implementation Steps:**
 
-1.  Create a new route file for each field-specific endpoint (e.g., `src/app/api/v1/transactions/extract/merchant/route.ts`).
-2.  In each route's `POST` handler, implement the same authentication logic.
-3.  Instead of calling `getTransactionDetails` directly, the handler will call the logic of our All-in-One/Selective API, hardcoding the `fields` parameter to the specific field for that route (e.g., `fields: ["merchant"]`).
-4.  This approach promotes code reuse and keeps the field-specific endpoints lightweight.
+1.  Create a dynamic route file at `src/app/api/v1/transactions/extract/[field]/route.ts` using Next.js dynamic routing.
+2.  In the route's `POST` handler, validate that the requested field is one of the 5 available fields: description, category, type, amount, date.
+3.  Implement the same authentication logic as the main endpoint.
+4.  Call `getTransactionDetails` and filter the response to include only the requested field.
+5.  This approach uses a single implementation to handle all field-specific endpoints, reducing code duplication.
 
 ## 4. Authentication
 
@@ -135,5 +155,7 @@ Here is a brief outline of the test cases we should cover for the API.
 
 *   **Test Case:** A request to the main endpoint with the `fields` parameter.
 *   **Expected Result:** A `200 OK` response containing only the specified fields.
-*   **Test Case:** A request to a field-specific endpoint (e.g., `/api/v1/transactions/extract/merchant`).
-*   **Expected Result:** A `200 OK` response containing only the `merchant` field.
+*   **Test Case:** A request to a field-specific endpoint (e.g., `/api/v1/transactions/extract/category`).
+*   **Expected Result:** A `200 OK` response containing only the `category` field.
+*   **Test Case:** A request to an invalid field-specific endpoint (e.g., `/api/v1/transactions/extract/merchant`).
+*   **Expected Result:** A `404 Not Found` error since the `merchant` field is not available in the schema.
