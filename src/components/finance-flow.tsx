@@ -10,8 +10,10 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -19,8 +21,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { Skeleton } from '@/components/ui/skeleton';
 import { getTransactionDetails, type ActionResult } from '@/app/actions';
 import type { ExtractTransactionDetailsOutput } from '@/ai/flows/extract-transaction-details';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -33,6 +33,9 @@ import {
   AlertCircle,
   Sparkles,
   Loader2,
+  Store,
+  CreditCard,
+  MapPin,
 } from 'lucide-react';
 
 type TaskType = 'full' | 'categorize' | 'get_transaction_type' | 'get_amount';
@@ -80,7 +83,8 @@ export function FinanceFlow() {
   const [task, setTask] = useState<TaskType>('full');
   const [omnibusMode, setOmnibusMode] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<ExtractTransactionDetailsOutput | null>(null);
+  // UPDATE state to hold an array of results
+  const [results, setResults] = useState<ExtractTransactionDetailsOutput | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -91,7 +95,7 @@ export function FinanceFlow() {
     }
     setLoading(true);
     setError(null);
-    setResult(null);
+    setResults(null); // Clear previous results
 
     const actionResult: ActionResult = await getTransactionDetails({
       text,
@@ -102,7 +106,7 @@ export function FinanceFlow() {
     if (actionResult.error) {
       setError(actionResult.error);
     } else if (actionResult.data) {
-      setResult(actionResult.data);
+      setResults(actionResult.data); // Set the array of results
     }
 
     setLoading(false);
@@ -205,7 +209,8 @@ export function FinanceFlow() {
         <CardHeader>
           <CardTitle>Extracted Details</CardTitle>
           <CardDescription>
-            Results from the AI analysis will appear here.
+            {/* UPDATE description based on results array */}
+            {results ? `Found ${results.length} transaction(s).` : 'Results from the AI analysis will appear here.'}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -227,22 +232,32 @@ export function FinanceFlow() {
             </div>
           )}
 
-          {result && !loading && (
-            <div className="space-y-4 animate-in fade-in-50 duration-500">
-                <ResultItem icon={<FileText size={20} />} label="Description" value={result.description} />
-                <ResultItem icon={<Tag size={20} />} label="Category" value={result.category} />
-                <ResultItem icon={<ArrowRightLeft size={20} />} label="Type" value={result.type} />
-                <ResultItem icon={<CircleDollarSign size={20} />} label="Amount" value={result.amount} />
-                <ResultItem icon={<Calendar size={20} />} label="Date" value={result.date} />
+          {/* UPDATE rendering logic to map over the results array */}
+          {results && !loading && (
+            <div className="space-y-6 animate-in fade-in-50 duration-500">
+              {results.map((result, index) => (
+                <div key={index} className="space-y-4 rounded-lg border p-4">
+                  <h3 className="font-semibold text-lg">Transaction #{index + 1}</h3>
+                  <ResultItem icon={<FileText size={20} />} label="Description" value={result.description} />
+                  <ResultItem icon={<Tag size={20} />} label="Category" value={result.category} />
+                  <ResultItem icon={<ArrowRightLeft size={20} />} label="Type" value={result.type} />
+                  <ResultItem icon={<CircleDollarSign size={20} />} label="Amount" value={result.amount} />
+                  <ResultItem icon={<Calendar size={20} />} label="Date" value={result.date} />
+                  {result.merchant && <ResultItem icon={<Store size={20} />} label="Merchant" value={result.merchant} />}
+                  {result.paymentMethod && <ResultItem icon={<CreditCard size={20} />} label="Payment Method" value={result.paymentMethod} />}
+                  {result.location && <ResultItem icon={<MapPin size={20} />} label="Location" value={result.location} />}
+                </div>
+              ))}
             </div>
           )}
 
-           {!loading && !result && !error && (
-            <div className="flex flex-col items-center justify-center text-center text-muted-foreground p-8 rounded-lg border-2 border-dashed">
+           {/* UPDATE the initial empty state message */}
+           {!loading && !results && !error && (
+             <div className="flex flex-col items-center justify-center text-center text-muted-foreground p-8 rounded-lg border-2 border-dashed">
                 <Sparkles className="h-10 w-10 mb-4" />
                 <p>Your results are waiting to be discovered.</p>
-                <p className="text-sm">Enter some text and click "Process Transaction".</p>
-            </div>
+                <p className="text-sm">Enter one or more transactions and click "Process".</p>
+             </div>
            )}
         </CardContent>
       </Card>
