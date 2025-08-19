@@ -12,6 +12,10 @@ This document outlines the technologies and libraries used in this project.
     *   `@genkit-ai/googleai`: Google AI provider for Genkit.
     *   `@genkit-ai/next`: Next.js integration for Genkit.
 
+## Backend
+
+*   **[Firebase Admin SDK](https://firebase.google.com/docs/admin/setup):** Used for server-side services, specifically for Firebase App Check verification.
+
 ## UI
 
 *   **[React](https://react.dev/):** A JavaScript library for building user interfaces.
@@ -24,11 +28,12 @@ This document outlines the technologies and libraries used in this project.
 ## Forms
 
 *   **[React Hook Form](https://react-hook-form.com/):** A library for managing forms in React.
-*   **[Zod](https://zod.dev/):** A TypeScript-first schema declaration and validation library.
+*   **[Zod](httpshttps://zod.dev/):** A TypeScript-first schema declaration and validation library.
 
-## Language
+## Language & Testing
 
 *   **[TypeScript](https://www.typescriptlang.org/):** A typed superset of JavaScript that compiles to plain JavaScript.
+*   **[Vitest](https://vitest.dev/):** A modern test runner for comprehensive API and application testing.
 
 ## Other Libraries
 
