@@ -8,9 +8,21 @@ This document outlines the technologies and libraries used in this project.
 
 ## Artificial Intelligence
 
-*   **[Genkit](https://firebase.google.com/docs/genkit):** A framework for building AI-powered features for Node.js and Go applications.
+### LLM Abstraction Layer
+
+*   **Custom LLM Client:** Multi-provider abstraction layer with automatic fallback, caching, and error handling.
+*   **Primary Provider:** [Genkit](https://firebase.google.com/docs/genkit) with Google AI/Gemini models.
     *   `@genkit-ai/googleai`: Google AI provider for Genkit.
     *   `@genkit-ai/next`: Next.js integration for Genkit.
+*   **Fallback Provider:** [OpenRouter](https://openrouter.ai/) for access to multiple open-source models.
+
+### Features
+
+*   **Intelligent Caching:** LRU cache with configurable TTL and size limits.
+*   **Provider Health Monitoring:** Automatic health checks and failover.
+*   **Comprehensive Error Handling:** Structured error types with retry logic.
+*   **Request/Response Validation:** Zod schema validation for all AI interactions.
+*   **Robust Response Parsing:** Markdown-aware JSON parsing with graceful error handling.
 
 ## Backend
 

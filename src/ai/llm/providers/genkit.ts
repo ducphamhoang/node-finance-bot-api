@@ -37,17 +37,10 @@ export class GenkitProvider implements LLMProvider {
   }
 
   /**
-   * Create a dynamic Genkit prompt for the given messages
+   * Convert LLMMessage array to a simple prompt string for ai.generate()
    */
-  private createDynamicPrompt(messages: LLMMessage[]) {
-    const promptString = this.buildPromptString(messages);
-    
-    return ai.definePrompt({
-      name: `dynamic_prompt_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      input: { schema: z.object({}) },
-      output: { schema: z.string() },
-      prompt: promptString,
-    });
+  private createPromptString(messages: LLMMessage[]): string {
+    return this.buildPromptString(messages);
   }
 
   /**
@@ -65,19 +58,30 @@ export class GenkitProvider implements LLMProvider {
         }, timeoutMs);
       });
 
-      // Create the dynamic prompt
-      const prompt = this.createDynamicPrompt(messages);
+      // Create the prompt string
+      const promptString = this.createPromptString(messages);
 
-      // Make the Genkit call
-      const genkitPromise = prompt({});
+      // Make the Genkit call using ai.generate()
+      const genkitPromise = ai.generate({
+        prompt: promptString,
+      });
 
       // Race between the actual call and timeout
       const result = await Promise.race([genkitPromise, timeoutPromise]);
 
+      // Handle timeout
+      if (result === 'timeout') {
+        throw new LLMTimeoutError(
+          `Genkit request timed out after ${this.timeout}ms`,
+          this.name,
+          this.timeout
+        );
+      }
+
       const duration = Date.now() - startTime;
 
       // Validate response
-      if (!result || typeof result.output !== 'string') {
+      if (!result || typeof result.text !== 'string') {
         throw new LLMInvalidResponseError(
           'Invalid response format from Genkit',
           this.name
@@ -85,7 +89,7 @@ export class GenkitProvider implements LLMProvider {
       }
 
       return {
-        content: result.output,
+        content: result.text,
         metadata: {
           provider: this.name,
           model: 'googleai/gemini-2.0-flash', // From genkit.ts config

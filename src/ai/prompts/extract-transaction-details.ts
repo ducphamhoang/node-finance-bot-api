@@ -33,7 +33,9 @@ Identify all distinct financial transactions in the provided text. For each tran
 - paymentMethod: The payment method used for the transaction (e.g., credit card, cash, debit card, PayPal). ${nullHandling}
 - location: The location where the transaction took place (e.g., "New York", "Online"). ${nullHandling}
 
-Return the extracted information as a JSON array of objects. Each object in the array should represent a single transaction. If no transactions are found, return an empty array.
+Return ONLY the extracted information as a valid JSON array of objects. Do not include any markdown formatting, code blocks, or additional text. Each object in the array should represent a single transaction. If no transactions are found, return an empty array.
+
+IMPORTANT: Your response must be valid JSON that can be parsed directly. Do not wrap the JSON in markdown code blocks or add any explanatory text.
 
 Example response format:
 [

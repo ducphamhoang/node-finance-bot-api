@@ -38,12 +38,31 @@ const ExtractTransactionDetailsOutputSchema = z.array(SingleTransactionSchema);
 export type ExtractTransactionDetailsOutput = z.infer<typeof ExtractTransactionDetailsOutputSchema>;
 
 /**
+ * Clean and extract JSON from LLM response that might be wrapped in markdown
+ */
+function cleanJsonResponse(content: string): string {
+  // Remove markdown code blocks if present
+  const jsonBlockRegex = /```(?:json)?\s*([\s\S]*?)\s*```/;
+  const match = content.match(jsonBlockRegex);
+  
+  if (match) {
+    return match[1].trim();
+  }
+  
+  // If no code blocks found, return the content as-is (might already be clean JSON)
+  return content.trim();
+}
+
+/**
  * Parse JSON response from LLM and validate against schema
  */
 function parseAndValidateResponse(content: string): ExtractTransactionDetailsOutput {
   try {
-    // Try to parse the JSON response
-    const parsed = JSON.parse(content);
+    // Clean the response to extract JSON from potential markdown wrapping
+    const cleanedContent = cleanJsonResponse(content);
+    
+    // Try to parse the cleaned JSON response
+    const parsed = JSON.parse(cleanedContent);
 
     // Validate against our schema
     const result = ExtractTransactionDetailsOutputSchema.parse(parsed);
@@ -51,6 +70,7 @@ function parseAndValidateResponse(content: string): ExtractTransactionDetailsOut
   } catch (error) {
     console.error('Failed to parse LLM response:', error);
     console.error('Raw response:', content);
+    console.error('Cleaned content:', cleanJsonResponse(content));
 
     // Return empty array if parsing fails
     return [];

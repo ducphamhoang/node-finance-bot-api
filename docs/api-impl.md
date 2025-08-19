@@ -1,6 +1,6 @@
 # Core Extraction APIs Implementation
 
-This document outlines the implementation of the Core Extraction APIs for the Finance Bot. The API is designed to extract details from a text description containing one or more financial transactions.
+This document outlines the implementation of the Core Extraction APIs for FinanceFlow AI. The API is designed to extract details from a text description containing one or more financial transactions using our advanced LLM abstraction layer.
 
 ## Available Fields
 
@@ -23,6 +23,32 @@ The implementation requires the following additional dependencies:
 - **vitest**: Modern test runner for comprehensive API testing.
 - **@vitest/ui**: Optional UI for test visualization.
 - **next-test-api-route-handler**: Helper for testing Next.js App Router API routes.
+
+## LLM Architecture
+
+The API leverages our sophisticated LLM abstraction layer which provides:
+
+- **Multi-Provider Support**: Primary provider (Genkit/Google AI) with automatic fallback to OpenRouter
+- **Intelligent Caching**: LRU cache with configurable TTL to reduce API calls and improve performance
+- **Error Handling**: Comprehensive error types and automatic retry logic
+- **Provider Health Monitoring**: Automatic health checks and failover capabilities
+
+For detailed information about the LLM system, see the [LLM Architecture Documentation](./llm-architecture.md).
+
+## Response Processing Improvements
+
+The API includes robust response processing capabilities:
+
+### JSON Parsing Enhancement
+- **Markdown-aware parsing**: Automatically handles LLM responses wrapped in markdown code blocks
+- **Graceful error handling**: Returns empty arrays for invalid JSON with detailed logging
+- **Unicode support**: Properly handles international characters and special symbols
+- **Schema validation**: All responses are validated against Zod schemas for type safety
+
+### Error Handling
+- **Detailed logging**: Both raw and cleaned response content are logged for debugging
+- **Fallback behavior**: Invalid responses don't crash the API, instead return structured error responses
+- **Provider transparency**: Error messages include provider information for troubleshooting
 
 ## 1. The All-in-One Extraction API
 

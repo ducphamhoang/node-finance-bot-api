@@ -13,12 +13,12 @@ FinanceFlow AI is a Next.js application that uses AI to extract transaction deta
 ## Tech Stack
 
 - **Framework**: [Next.js](https://nextjs.org/)
-- **AI**: [Genkit](https://firebase.google.com/docs/genkit) with [OpenRouter](https://openrouter.ai/) fallback
-- **Backend**: [Firebase Admin SDK](https://firebase.google.com/docs/admin/setup) for API authentication.
+- **AI**: Custom LLM abstraction layer with [Genkit](https://firebase.google.com/docs/genkit) (Google AI) and [OpenRouter](https://openrouter.ai/) providers
+- **Backend**: [Firebase Admin SDK](https://firebase.google.com/docs/admin/setup) for API authentication
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/)
 - **UI Components**: [shadcn/ui](https://ui.shadcn.com/)
 - **Language**: [TypeScript](https://www.typescriptlang.org/)
-- **Testing**: [Vitest](https://vitest.dev/)
+- **Testing**: [Vitest](https://vitest.dev/) with comprehensive test coverage
 
 ## LLM Configuration
 
@@ -70,12 +70,15 @@ The application provides detailed logging for LLM operations:
 - Cache hit/miss statistics
 - Error details with provider information
 - Request timing and token usage
+- Response parsing details (raw and cleaned content)
 
 Common issues and solutions:
 - **All providers failing**: Check API keys and network connectivity
 - **Slow responses**: Enable caching or increase timeout values
 - **Rate limits**: Configure retry delays or upgrade API plans
 - **High costs**: Enable caching and adjust model selection
+- **JSON parsing errors**: The system automatically handles markdown-wrapped responses
+- **Invalid responses**: Graceful fallback returns empty arrays with detailed logging
 
 ## Getting Started
 
@@ -144,6 +147,13 @@ This will start the Genkit development server on http://localhost:4000.
 ## API
 
 The project exposes a versioned REST API for extracting transaction details. For more information, see the [API Implementation Documentation](./docs/api-impl.md).
+
+## Documentation
+
+- **[Codebase Overview](./docs/codebase.md)**: Application flow, file structure, and key methods
+- **[LLM Architecture](./docs/llm-architecture.md)**: Detailed documentation of the LLM abstraction layer
+- **[Tech Stack](./docs/techstack.md)**: Technologies and libraries used in the project
+- **[API Implementation](./docs/api-impl.md)**: REST API endpoints and usage
 
 ## Building for Production
 
