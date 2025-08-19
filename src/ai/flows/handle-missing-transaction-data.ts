@@ -1,9 +1,9 @@
 // src/ai/flows/handle-missing-transaction-data.ts
 'use server';
 /**
- * @fileOverview This file defines a Genkit flow to handle missing transaction data.
+ * @fileOverview This file defines a flow to handle missing transaction data.
  *
- * It uses a prompt to intelligently fill in missing details (amount, date, or category) with 'null'
+ * It uses LLM prompts to intelligently fill in missing details (amount, date, or category) with 'null'
  * values if they cannot be reasonably inferred from the transaction description.
  *
  * @exports handleMissingTransactionData - The main function to trigger the flow.
@@ -11,8 +11,9 @@
  * @exports HandleMissingTransactionDataOutput - The output type for the flow.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { z } from 'zod';
+import { llmClient } from '@/ai/llm';
+import { buildHandleMissingTransactionDataMessages } from '@/ai/prompts/handle-missing-transaction-data';
 
 const HandleMissingTransactionDataInputSchema = z.object({
   description: z.string().describe('The transaction description provided by the user.'),
@@ -26,38 +27,60 @@ const HandleMissingTransactionDataOutputSchema = z.object({
 });
 export type HandleMissingTransactionDataOutput = z.infer<typeof HandleMissingTransactionDataOutputSchema>;
 
+/**
+ * Parse JSON response from LLM and validate against schema
+ */
+function parseAndValidateResponse(content: string): HandleMissingTransactionDataOutput {
+  try {
+    // Try to parse the JSON response
+    const parsed = JSON.parse(content);
+
+    // Validate against our schema
+    const result = HandleMissingTransactionDataOutputSchema.parse(parsed);
+    return result;
+  } catch (error) {
+    console.error('Failed to parse LLM response for missing transaction data:', error);
+    console.error('Raw response:', content);
+
+    // Return default null values if parsing fails
+    return {
+      amount: null,
+      date: null,
+      category: null,
+    };
+  }
+}
+
+/**
+ * Handle missing transaction data using the new LLM client
+ */
+async function handleMissingTransactionDataFlow(
+  input: HandleMissingTransactionDataInput
+): Promise<HandleMissingTransactionDataOutput> {
+  const { description } = input;
+
+  try {
+    // Build messages using the prompt template
+    const messages = buildHandleMissingTransactionDataMessages({
+      description,
+    });
+
+    // Call the LLM client
+    const response = await llmClient.call(messages, {
+      temperature: 0.1, // Low temperature for consistent extraction
+      maxTokens: 500,
+    });
+
+    // Parse and validate the response
+    return parseAndValidateResponse(response.content);
+  } catch (error) {
+    console.error('Error in handleMissingTransactionDataFlow:', error);
+    throw error;
+  }
+}
+
 export async function handleMissingTransactionData(
   input: HandleMissingTransactionDataInput
 ): Promise<HandleMissingTransactionDataOutput> {
   return handleMissingTransactionDataFlow(input);
 }
-
-const prompt = ai.definePrompt({
-  name: 'handleMissingTransactionDataPrompt',
-  input: {schema: HandleMissingTransactionDataInputSchema},
-  output: {schema: HandleMissingTransactionDataOutputSchema},
-  prompt: `You are an AI assistant specializing in financial transaction analysis.
-  Given the following transaction description, extract the amount, date, and category.
-  If any of these values cannot be reasonably inferred from the description, set the corresponding output field to null.
-
-  Description: {{{description}}}
-
-  Output in JSON format with amount as a number or null, date as an ISO string or null, and category as a string or null:
-  {
-    "amount": <amount or null>,
-    "date": <date in ISO format or null>,
-    "category": <category or null>
-  }`,
-});
-
-const handleMissingTransactionDataFlow = ai.defineFlow(
-  {
-    name: 'handleMissingTransactionDataFlow',
-    inputSchema: HandleMissingTransactionDataInputSchema,
-    outputSchema: HandleMissingTransactionDataOutputSchema,
-  },
-  async input => {
-    const {output} = await prompt(input);
-    return output!;
-  }
-);

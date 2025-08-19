@@ -1,6 +1,12 @@
 import { NextResponse } from 'next/server';
 import { ZodError, ZodIssue } from 'zod';
 import { AppCheckMissingError, AppCheckInvalidError } from '@/lib/auth/verifyAppCheck';
+import {
+  LLMProviderError,
+  LLMTimeoutError,
+  LLMQuotaExceededError,
+  LLMAllProvidersFailedError,
+} from '@/ai/llm/types';
 
 /**
  * RFC 7807 Problem Details interface
@@ -147,6 +153,111 @@ export function mapNotFoundErrorToResponse(detail: string, instance?: string): N
     status: 404,
     detail,
     instance,
+  };
+
+  return createProblemResponse(problem);
+}
+
+/**
+ * Map LLM provider errors to HTTP responses
+ */
+export function mapLLMProviderErrorToResponse(error: LLMProviderError, instance?: string): NextResponse {
+  console.error(`LLM Provider error (${error.provider}):`, error.message);
+
+  // Determine status code based on error type
+  let status = error.statusCode || 500;
+  let title = 'LLM Provider Error';
+  let type = 'https://tools.ietf.org/html/rfc7231#section-6.6.1';
+
+  if (error.statusCode === 401) {
+    title = 'LLM Authentication Error';
+    type = 'https://tools.ietf.org/html/rfc7235#section-3.1';
+  } else if (error.statusCode === 429) {
+    title = 'LLM Rate Limit Exceeded';
+    type = 'https://tools.ietf.org/html/rfc6585#section-4';
+  } else if (error.statusCode === 400) {
+    title = 'LLM Bad Request';
+    type = 'https://tools.ietf.org/html/rfc7231#section-6.5.1';
+    status = 400;
+  }
+
+  const problem: ProblemDetails = {
+    type,
+    title,
+    status,
+    detail: `LLM provider (${error.provider}) error: ${error.message}`,
+    instance,
+    provider: error.provider,
+    code: error.code,
+  };
+
+  return createProblemResponse(problem);
+}
+
+/**
+ * Map LLM timeout errors to HTTP responses
+ */
+export function mapLLMTimeoutErrorToResponse(error: LLMTimeoutError, instance?: string): NextResponse {
+  console.error(`LLM Timeout error (${error.provider}):`, error.message);
+
+  const problem: ProblemDetails = {
+    type: 'https://tools.ietf.org/html/rfc7231#section-6.6.3',
+    title: 'LLM Request Timeout',
+    status: 504,
+    detail: `LLM request timed out: ${error.message}`,
+    instance,
+    provider: error.provider,
+  };
+
+  return createProblemResponse(problem);
+}
+
+/**
+ * Map LLM quota exceeded errors to HTTP responses
+ */
+export function mapLLMQuotaExceededErrorToResponse(error: LLMQuotaExceededError, instance?: string): NextResponse {
+  console.error(`LLM Quota exceeded error (${error.provider}):`, error.message);
+
+  const headers: HeadersInit = {};
+  if (error.retryAfter) {
+    headers['Retry-After'] = String(Math.ceil(error.retryAfter / 1000));
+  }
+
+  const problem: ProblemDetails = {
+    type: 'https://tools.ietf.org/html/rfc6585#section-4',
+    title: 'LLM Quota Exceeded',
+    status: 429,
+    detail: `LLM provider quota exceeded: ${error.message}`,
+    instance,
+    provider: error.provider,
+    retryAfter: error.retryAfter,
+  };
+
+  return createProblemResponse(problem, headers);
+}
+
+/**
+ * Map all providers failed errors to HTTP responses
+ */
+export function mapLLMAllProvidersFailedErrorToResponse(error: LLMAllProvidersFailedError, instance?: string): NextResponse {
+  console.error('All LLM providers failed:', error.message);
+
+  // Log individual provider errors for debugging
+  error.errors.forEach(providerError => {
+    console.error(`- ${providerError.provider}: ${providerError.message}`);
+  });
+
+  const problem: ProblemDetails = {
+    type: 'https://tools.ietf.org/html/rfc7231#section-6.6.1',
+    title: 'All LLM Providers Failed',
+    status: 503,
+    detail: 'All available LLM providers failed to process the request',
+    instance,
+    providerErrors: error.errors.map(e => ({
+      provider: e.provider,
+      message: e.message,
+      code: e.code,
+    })),
   };
 
   return createProblemResponse(problem);
