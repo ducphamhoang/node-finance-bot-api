@@ -11,9 +11,9 @@ import type { ExtractTransactionDetailsOutput } from '@/ai/flows/extract-transac
 
 describe('Validation Utilities', () => {
   describe('VALID_FIELDS constant', () => {
-    it('should contain exactly 5 expected fields', () => {
-      expect(VALID_FIELDS).toEqual(['description', 'category', 'type', 'amount', 'date']);
-      expect(VALID_FIELDS).toHaveLength(5);
+    it('should contain exactly 6 expected fields', () => {
+      expect(VALID_FIELDS).toEqual(['description', 'category', 'type', 'amount', 'date', 'llm_comment']);
+      expect(VALID_FIELDS).toHaveLength(6);
     });
   });
 
@@ -21,7 +21,7 @@ describe('Validation Utilities', () => {
     it('should return true for valid field names', () => {
       expect(validateFields(['description'])).toBe(true);
       expect(validateFields(['amount', 'category'])).toBe(true);
-      expect(validateFields(['description', 'category', 'type', 'amount', 'date'])).toBe(true);
+      expect(validateFields(['description', 'category', 'type', 'amount', 'date', 'llm_comment'])).toBe(true);
     });
 
     it('should return false for invalid field names', () => {
@@ -42,6 +42,7 @@ describe('Validation Utilities', () => {
       expect(isValidField('type')).toBe(true);
       expect(isValidField('amount')).toBe(true);
       expect(isValidField('date')).toBe(true);
+      expect(isValidField('llm_comment')).toBe(true);
     });
 
     it('should return false for invalid field names', () => {
@@ -52,59 +53,75 @@ describe('Validation Utilities', () => {
   });
 
   describe('filterResponseByFields function', () => {
-    const mockResponse: ExtractTransactionDetailsOutput = {
+    const mockResponse: ExtractTransactionDetailsOutput = [{
       description: 'Coffee at Starbucks',
       category: 'dining',
       type: 'expense',
       amount: 4.50,
       date: '2024-01-15',
-    };
+      merchant: 'Starbucks',
+      paymentMethod: 'credit card',
+      location: 'New York',
+      llm_comment: 'Looks like someone couldn\'t resist another coffee run! ☕️'
+    }];
 
     it('should filter response to include only requested fields', () => {
       const result = filterResponseByFields(mockResponse, ['amount', 'category']);
-      expect(result).toEqual({
+      expect(result).toEqual([{
         amount: 4.50,
         category: 'dining',
-      });
+      }]);
     });
 
     it('should handle single field filtering', () => {
       const result = filterResponseByFields(mockResponse, ['description']);
-      expect(result).toEqual({
+      expect(result).toEqual([{
         description: 'Coffee at Starbucks',
-      });
+      }]);
     });
 
     it('should handle all fields', () => {
-      const result = filterResponseByFields(mockResponse, ['description', 'category', 'type', 'amount', 'date']);
-      expect(result).toEqual(mockResponse);
+      const result = filterResponseByFields(mockResponse, ['description', 'category', 'type', 'amount', 'date', 'llm_comment']);
+      // When filtering by all VALID_FIELDS, it should include only those fields
+      expect(result).toEqual([{
+        description: 'Coffee at Starbucks',
+        category: 'dining',
+        type: 'expense',
+        amount: 4.50,
+        date: '2024-01-15',
+        llm_comment: 'Looks like someone couldn\'t resist another coffee run! ☕️'
+      }]);
     });
 
     it('should handle empty fields array', () => {
       const result = filterResponseByFields(mockResponse, []);
-      expect(result).toEqual({});
+      expect(result).toEqual([{}]);
     });
 
     it('should not modify original object', () => {
-      const originalResponse = { ...mockResponse };
+      const originalResponse = [...mockResponse];
       filterResponseByFields(mockResponse, ['amount']);
       expect(mockResponse).toEqual(originalResponse);
     });
 
     it('should handle null values', () => {
-      const responseWithNulls: ExtractTransactionDetailsOutput = {
+      const responseWithNulls: ExtractTransactionDetailsOutput = [{
         description: 'Some transaction',
         category: null,
         type: 'expense',
         amount: null,
         date: null,
-      };
+        merchant: null,
+        paymentMethod: null,
+        location: null,
+        llm_comment: 'A mysterious transaction appears! 🎭'
+      }];
 
       const result = filterResponseByFields(responseWithNulls, ['category', 'amount']);
-      expect(result).toEqual({
+      expect(result).toEqual([{
         category: null,
         amount: null,
-      });
+      }]);
     });
   });
 

@@ -6,7 +6,7 @@ import type { ExtractTransactionDetailsOutput } from '@/ai/flows/extract-transac
  * Valid fields that can be extracted from transactions
  * Based on ExtractTransactionDetailsOutputSchema
  */
-export const VALID_FIELDS = ['description', 'category', 'type', 'amount', 'date'] as const;
+export const VALID_FIELDS = ['description', 'category', 'type', 'amount', 'date', 'llm_comment'] as const;
 export type ValidField = typeof VALID_FIELDS[number];
 
 /**
@@ -41,16 +41,18 @@ export function validateFields(fields: string[]): fields is ValidField[] {
 export function filterResponseByFields(
   response: ExtractTransactionDetailsOutput,
   fields: ValidField[]
-): Partial<ExtractTransactionDetailsOutput> {
-  const filtered: Partial<ExtractTransactionDetailsOutput> = {};
-  
-  for (const field of fields) {
-    if (field in response) {
-      (filtered as any)[field] = response[field];
+): ExtractTransactionDetailsOutput {
+  return response.map(transaction => {
+    const filtered: any = {};
+    
+    for (const field of fields) {
+      if (field in transaction) {
+        filtered[field] = transaction[field as keyof typeof transaction];
+      }
     }
-  }
-  
-  return filtered;
+    
+    return filtered;
+  });
 }
 
 /**
@@ -112,12 +114,16 @@ export function isValidField(field: string): field is ValidField {
  */
 export function isExtractTransactionDetailsOutput(obj: any): obj is ExtractTransactionDetailsOutput {
   return (
-    typeof obj === 'object' &&
-    obj !== null &&
-    typeof obj.description === 'string' &&
-    (obj.category === null || typeof obj.category === 'string') &&
-    typeof obj.type === 'string' &&
-    (obj.amount === null || typeof obj.amount === 'number') &&
-    (obj.date === null || typeof obj.date === 'string')
+    Array.isArray(obj) &&
+    obj.every(transaction =>
+      typeof transaction === 'object' &&
+      transaction !== null &&
+      typeof transaction.description === 'string' &&
+      (transaction.category === null || typeof transaction.category === 'string') &&
+      typeof transaction.type === 'string' &&
+      (transaction.amount === null || typeof transaction.amount === 'number') &&
+      (transaction.date === null || typeof transaction.date === 'string') &&
+      typeof transaction.llm_comment === 'string'
+    )
   );
 }

@@ -32,6 +32,7 @@ Identify all distinct financial transactions in the provided text. For each tran
 - merchant: The merchant or business name associated with the transaction (e.g., "Starbucks", "Amazon"). ${nullHandling}
 - paymentMethod: The payment method used for the transaction (e.g., credit card, cash, debit card, PayPal). ${nullHandling}
 - location: The location where the transaction took place (e.g., "New York", "Online"). ${nullHandling}
+- llm_comment: A brief, funny, or witty comment about this specific transaction. Be creative and humorous while keeping it light-hearted and appropriate. Consider the merchant, amount, category, or context to make it relevant and entertaining.
 
 Return ONLY the extracted information as a valid JSON array of objects. Do not include any markdown formatting, code blocks, or additional text. Each object in the array should represent a single transaction. If no transactions are found, return an empty array.
 
@@ -47,7 +48,8 @@ Example response format:
     "date": "2024-01-15",
     "merchant": "Starbucks",
     "paymentMethod": "credit card",
-    "location": "New York"
+    "location": "New York",
+    "llm_comment": "Looks like someone couldn't resist another coffee run! ☕️"
   }
 ]`;
 }
@@ -133,6 +135,7 @@ Identify all distinct financial transactions in the provided text. For each tran
 - merchant: The merchant or business name associated with the transaction (e.g., "Starbucks", "Amazon"). If you cannot determine the merchant, and omnibusMode is enabled, use the assignNull tool to assign null.
 - paymentMethod: The payment method used for the transaction (e.g., credit card, cash, debit card, PayPal). If you cannot determine the payment method, and omnibusMode is enabled, use the assignNull tool to assign null.
 - location: The location where the transaction took place (e.g., "New York", "Online"). If you cannot determine the location, and omnibusMode is enabled, use the assignNull tool to assign null.
+- llm_comment: A brief, funny, or witty comment about this specific transaction. Be creative and humorous while keeping it light-hearted and appropriate. Consider the merchant, amount, category, or context to make it relevant and entertaining.
 
 Here is the transaction description:
 {{text}}

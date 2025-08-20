@@ -6,13 +6,17 @@ import { getTransactionDetails } from '@/app/actions';
 // Mock the server action
 vi.mocked(getTransactionDetails).mockImplementation(async (input) => {
   return {
-    data: {
+    data: [{
       description: 'Coffee at Starbucks',
       category: 'dining',
       type: 'expense',
       amount: 4.50,
       date: '2024-01-15',
-    },
+      merchant: 'Starbucks',
+      paymentMethod: 'credit card',
+      location: 'New York',
+      llm_comment: 'Looks like someone couldn\'t resist another coffee run! ☕️'
+    }],
   };
 });
 
@@ -242,13 +246,17 @@ describe('/api/v1/transactions/extract/[field]', () => {
   describe('Response Format Tests', () => {
     it('should handle null values for nullable fields', async () => {
       vi.mocked(getTransactionDetails).mockResolvedValueOnce({
-        data: {
+        data: [{
           description: 'Some transaction',
           category: null,
           type: 'expense',
           amount: null,
           date: null,
-        },
+          merchant: null,
+          paymentMethod: null,
+          location: null,
+          llm_comment: 'A mysterious transaction appears! 🎭'
+        }],
       });
 
       await testApiHandler({
