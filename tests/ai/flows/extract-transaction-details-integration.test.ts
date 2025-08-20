@@ -29,7 +29,8 @@ describe('extractTransactionDetails Integration', () => {
     "date": "2024-01-15",
     "merchant": "Starbucks",
     "paymentMethod": "credit card",
-    "location": "New York"
+    "location": "New York",
+    "llm_comment": "Looks like someone couldn't resist another coffee run! ☕️"
   }
 ]
 \`\`\``,
@@ -58,7 +59,8 @@ describe('extractTransactionDetails Integration', () => {
         date: "2024-01-15",
         merchant: "Starbucks",
         paymentMethod: "credit card",
-        location: "New York"
+        location: "New York",
+        llm_comment: "Looks like someone couldn't resist another coffee run! ☕️"
       });
     });
 
@@ -74,7 +76,8 @@ describe('extractTransactionDetails Integration', () => {
     "date": null,
     "merchant": "Lux68",
     "paymentMethod": null,
-    "location": null
+    "location": null,
+    "llm_comment": "Vietnamese comfort food at its finest! 🍚"
   },
   {
     "description": "Đổ xăng",
@@ -84,7 +87,8 @@ describe('extractTransactionDetails Integration', () => {
     "date": null,
     "merchant": null,
     "paymentMethod": null,
-    "location": null
+    "location": null,
+    "llm_comment": "Fuel costs are going through the roof! ⛽💸"
   }
 ]
 \`\`\``,
@@ -113,7 +117,8 @@ describe('extractTransactionDetails Integration', () => {
         date: null,
         merchant: "Lux68",
         paymentMethod: null,
-        location: null
+        location: null,
+        llm_comment: expect.any(String)
       });
       expect(result[1]).toEqual({
         description: "Đổ xăng",
@@ -123,7 +128,8 @@ describe('extractTransactionDetails Integration', () => {
         date: null,
         merchant: null,
         paymentMethod: null,
-        location: null
+        location: null,
+        llm_comment: expect.any(String)
       });
     });
 
@@ -138,7 +144,8 @@ describe('extractTransactionDetails Integration', () => {
     "date": "2024-01-15",
     "merchant": "Starbucks",
     "paymentMethod": "credit card",
-    "location": "New York"
+    "location": "New York",
+    "llm_comment": "Looks like someone couldn't resist another coffee run! ☕️"
   }
 ]`,
         metadata: {
@@ -219,7 +226,8 @@ describe('extractTransactionDetails Integration', () => {
     "date": "2024-01-15",
     "merchant": "Starbucks",
     "paymentMethod": "credit card",
-    "location": "New York"
+    "location": "New York",
+    "llm_comment": "Looks like someone couldn't resist another coffee run! ☕️"
   }
 ]`,
         metadata: {

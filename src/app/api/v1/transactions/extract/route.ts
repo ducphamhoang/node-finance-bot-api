@@ -84,7 +84,12 @@ export async function POST(request: NextRequest) {
 
     if (fields && fields.length > 0) {
       // Selective extraction - filter response to include only requested fields
-      responseData = filterResponseByFields(actionResult.data, fields as ValidField[]);
+      const filteredData = filterResponseByFields(actionResult.data, fields as ValidField[]);
+      // For the main endpoint with selective fields, return the first transaction's filtered fields
+      responseData = filteredData.length > 0 ? filteredData[0] : {};
+    } else {
+      // For all-in-one extraction (no fields specified), return the first transaction
+      responseData = actionResult.data.length > 0 ? actionResult.data[0] : {};
     }
 
     // 6. Return successful response

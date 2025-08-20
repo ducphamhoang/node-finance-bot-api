@@ -41,7 +41,8 @@ describe('extractTransactionDetails', () => {
           date: "2024-01-15",
           merchant: "Starbucks",
           paymentMethod: "credit card",
-          location: "New York"
+          location: "New York",
+          llm_comment: "Looks like someone couldn't resist another coffee run! ☕️"
         }]),
         metadata: {
           provider: 'genkit',
@@ -81,7 +82,8 @@ describe('extractTransactionDetails', () => {
         date: "2024-01-15",
         merchant: "Starbucks",
         paymentMethod: "credit card",
-        location: "New York"
+        location: "New York",
+        llm_comment: "Looks like someone couldn't resist another coffee run! ☕️"
       });
     });
 
@@ -96,7 +98,8 @@ describe('extractTransactionDetails', () => {
             date: "2024-01-15",
             merchant: "Starbucks",
             paymentMethod: "credit card",
-            location: "New York"
+            location: "New York",
+            llm_comment: "Another coffee addict spotted in the wild! ☕"
           },
           {
             description: "Grocery shopping",
@@ -106,7 +109,8 @@ describe('extractTransactionDetails', () => {
             date: "2024-01-16",
             merchant: "Whole Foods",
             paymentMethod: "debit card",
-            location: "San Francisco"
+            location: "San Francisco",
+            llm_comment: "Someone's living the healthy life... at premium prices! 🥗💸"
           }
         ]),
         metadata: {
@@ -165,7 +169,8 @@ describe('extractTransactionDetails', () => {
         date: "2024-01-15",
         merchant: "Starbucks",
         paymentMethod: "credit card",
-        location: "New York"
+        location: "New York",
+        llm_comment: "Caffeine dependency confirmed! 😄"
       }]),
       metadata: {
         provider: 'genkit',
@@ -241,8 +246,8 @@ describe('extractTransactionDetails', () => {
     it('should not apply task filtering for multiple transactions', async () => {
       const multipleTransactionResponse: LLMResponse = {
         content: JSON.stringify([
-          { description: "Coffee", category: "dining", type: "expense", amount: 4.50, date: "2024-01-15", merchant: "Starbucks", paymentMethod: "credit card", location: "NYC" },
-          { description: "Lunch", category: "dining", type: "expense", amount: 12.00, date: "2024-01-15", merchant: "Subway", paymentMethod: "cash", location: "NYC" }
+          { description: "Coffee", category: "dining", type: "expense", amount: 4.50, date: "2024-01-15", merchant: "Starbucks", paymentMethod: "credit card", location: "NYC", llm_comment: "Daily caffeine fix! ☕" },
+          { description: "Lunch", category: "dining", type: "expense", amount: 12.00, date: "2024-01-15", merchant: "Subway", paymentMethod: "cash", location: "NYC", llm_comment: "Subway - because hunger waits for no one! 🥪" }
         ]),
         metadata: { provider: 'genkit', model: 'test-model', duration: 100, cached: false },
       };
@@ -355,7 +360,8 @@ describe('extractTransactionDetails', () => {
           date: null,
           merchant: null,
           paymentMethod: null,
-          location: null
+          location: null,
+          llm_comment: "Mystery coffee transaction - who knows what happened here! 🤷‍♂️"
         }]),
         metadata: {
           provider: 'genkit',
