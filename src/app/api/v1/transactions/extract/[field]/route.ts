@@ -20,7 +20,7 @@ import { getTransactionDetails } from '@/app/actions';
  * POST /api/v1/transactions/extract/[field]
  * 
  * Extract a specific field from transaction text
- * Supports: description, category, type, amount, date
+ * Supports: description, category, type, amount, date, llm_comment
  */
 export async function POST(
   request: NextRequest,
@@ -33,7 +33,7 @@ export async function POST(
     // 1. Validate that the requested field is valid
     if (!isValidField(field)) {
       return mapNotFoundErrorToResponse(
-        `Field '${field}' is not available. Valid fields are: description, category, type, amount, date`,
+        `Field '${field}' is not available. Valid fields are: description, category, type, amount, date, llm_comment`,
         instance
       );
     }
@@ -81,10 +81,13 @@ export async function POST(
     }
 
     // 6. Filter response to include only the requested field
-    const responseData = filterResponseByFields(
+    const filteredData = filterResponseByFields(
       actionResult.data, 
       [field as ValidField]
     );
+
+    // For field-specific endpoints, return the field from the first transaction only
+    const responseData = filteredData.length > 0 ? filteredData[0] : {};
 
     // 7. Return successful response
     return NextResponse.json(responseData, {
