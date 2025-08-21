@@ -77,6 +77,12 @@ Here is a breakdown of the key files and directories in the project:
 *   `auth/verifyAppCheck.ts`: Contains the logic for verifying Firebase App Check tokens to authenticate API requests.
 *   `errors.ts`: Implements a structured error handling system using RFC 7807 Problem Details for HTTP APIs.
 *   `validation.ts`: Provides Zod schemas and utility functions for validating API requests.
+*   `firebaseAdmin.ts`: Firebase Admin SDK initialization with singleton pattern and multiple credential approaches.
+
+### `src/lib/logging/`
+
+*   `firestore.ts`: Firestore-based logging service for capturing user interactions with LLM services.
+*   `index.ts`: Main exports for the logging system, including service instances and utility functions.
 
 ## Key Methods
 
@@ -88,6 +94,12 @@ Here is a breakdown of the key files and directories in the project:
 ### `extractTransactionDetails(input: ExtractTransactionDetailsInput): Promise<ExtractTransactionDetailsOutput>`
 
 *   **File:** `src/ai/flows/extract-transaction-details.ts`
+*   **Description:** The core function for extracting transaction details using the LLM abstraction layer. Handles prompt building, LLM calls, response parsing, and task-specific filtering.
+
+### `extractTransactionDetailsWithLogging(input: ExtractTransactionDetailsInput, loggingContext?: LoggingContext): Promise<ExtractTransactionDetailsOutput>`
+
+*   **File:** `src/ai/flows/extract-transaction-details.ts`
+*   **Description:** Enhanced version of transaction extraction that includes automatic logging of user interactions. Captures input, response, metadata, and performance metrics in Firestore for analytics and debugging.
 *   **Description:** The main function for extracting transaction details. Uses the LLM client to process transaction text and returns structured data. Includes task-specific filtering and response validation.
 
 ### `handleMissingTransactionData(input: HandleMissingTransactionDataInput): Promise<HandleMissingTransactionDataOutput>`
@@ -104,3 +116,13 @@ Here is a breakdown of the key files and directories in the project:
 
 *   **File:** `src/ai/prompts/extract-transaction-details.ts`
 *   **Description:** Builds structured message arrays for LLM communication, including system prompts and user prompts with proper formatting and context.
+
+### `FirestoreLoggingService.logInteraction(entry: LogEntry): Promise<void>`
+
+*   **File:** `src/lib/logging/firestore.ts`
+*   **Description:** Logs user interactions with LLM services to Firestore. Includes automatic timestamp generation, data validation, and non-blocking error handling to prevent service disruption.
+
+### `FirestoreLoggingService.getInteractionLogs(options?: FilterOptions): Promise<LogEntry[]>`
+
+*   **File:** `src/lib/logging/firestore.ts`
+*   **Description:** Retrieves interaction logs from Firestore with optional filtering by user, session, date range, and limits. Supports efficient querying for analytics and debugging.

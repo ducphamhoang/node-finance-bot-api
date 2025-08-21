@@ -11,6 +11,7 @@
 import { z } from 'zod';
 import { llmClient } from '@/ai/llm';
 import { buildExtractTransactionDetailsMessages } from '@/ai/prompts/extract-transaction-details';
+import { getLoggingService, generateSessionId } from '@/lib/logging';
 
 const ExtractTransactionDetailsInputSchema = z.object({
   text: z
@@ -160,4 +161,97 @@ async function extractTransactionDetailsFlow(input: ExtractTransactionDetailsInp
 
 export async function extractTransactionDetails(input: ExtractTransactionDetailsInput): Promise<ExtractTransactionDetailsOutput> {
   return extractTransactionDetailsFlow(input);
+}
+
+/**
+ * Enhanced extraction function with logging support
+ */
+export async function extractTransactionDetailsWithLogging(
+  input: ExtractTransactionDetailsInput,
+  loggingContext?: {
+    userId?: string;
+    sessionId?: string;
+  }
+): Promise<ExtractTransactionDetailsOutput> {
+  const startTime = Date.now();
+  let response: any = null;
+  let provider: string | undefined;
+  let model: string | undefined;
+
+  try {
+    const { text, task, omnibusMode } = input;
+
+    // Build messages using the prompt template
+    const messages = buildExtractTransactionDetailsMessages({
+      text,
+      task,
+      omnibusMode,
+    });
+
+    // Call the LLM client with response metadata tracking
+    const llmResponse = await llmClient.call(messages, {
+      temperature: 0.1, // Low temperature for consistent extraction
+      maxTokens: 2000,
+    });
+
+    // Extract metadata from response
+    provider = llmResponse.metadata?.provider;
+    model = llmResponse.metadata?.model;
+    response = llmResponse;
+
+    // Parse and validate the response
+    const transactions = parseAndValidateResponse(llmResponse.content);
+
+    // Apply task-specific filtering
+    const result = applyTaskFiltering(transactions, task);
+
+    // Log the interaction asynchronously (non-blocking)
+    const duration = Date.now() - startTime;
+    
+    // Generate session ID if not provided for anonymous users
+    const sessionId = loggingContext?.sessionId || generateSessionId();
+    
+    // Don't await this to keep it non-blocking
+    getLoggingService().logInteraction({
+      userId: loggingContext?.userId,
+      sessionId,
+      input: text,
+      response: result,
+      metadata: {
+        provider,
+        model,
+        duration,
+        tokens: llmResponse.metadata?.tokens,
+        cached: llmResponse.metadata?.cached,
+      },
+    }).catch(error => {
+      // Already logged in the service, just ensure it doesn't bubble up
+      console.warn('Non-blocking logging error:', error.message);
+    });
+
+    return result;
+  } catch (error) {
+    // Log error interactions as well
+    const duration = Date.now() - startTime;
+    const sessionId = loggingContext?.sessionId || generateSessionId();
+
+    // Non-blocking error logging
+    getLoggingService().logInteraction({
+      userId: loggingContext?.userId,
+      sessionId,
+      input: input.text,
+      response: { error: error instanceof Error ? error.message : 'Unknown error' },
+      metadata: {
+        provider,
+        model,
+        duration,
+        error: true,
+      },
+    }).catch(() => {
+      // Ignore logging errors during error handling
+    });
+
+    console.error('Error in extractTransactionDetailsFlow:', error);
+    throw error;
+  }
 }
