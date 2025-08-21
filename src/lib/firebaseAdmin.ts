@@ -1,6 +1,7 @@
 import { initializeApp, getApps, cert, type App } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { getAppCheck } from 'firebase-admin/app-check';
+import { getFirestore } from 'firebase-admin/firestore';
 
 let adminApp: App | null = null;
 
@@ -95,6 +96,13 @@ export function getFirebaseAuth() {
  */
 export function getFirebaseAppCheck() {
   return getAppCheck(getFirebaseAdmin());
+}
+
+/**
+ * Get Firebase Firestore instance
+ */
+export function getFirebaseFirestore() {
+  return getFirestore(getFirebaseAdmin());
 }
 
 // Initialize on module load
