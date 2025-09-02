@@ -43,3 +43,11 @@ next-env.d.ts
 # firebase
 firebase-debug.log
 firestore-debug.log
+
+# Temporary files produced during pre-commit / tooling
+.modified
+added-packages.txt
+removed-packages.txt
+package-lock-diff.md
+package-lock-full-diff.txt
+docs/temp_test_new_structure.md
